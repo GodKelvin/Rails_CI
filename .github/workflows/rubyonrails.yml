@@ -1,45 +1,33 @@
-name: Run Tests
+name: Rails Build and Test
 
 on:
+  push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
-
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: test_database
-        ports:
-        - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Ruby 3.0 and MySQL
+
+    - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 3.1.3
-      env:
-        DATABASE_HOST: mysql
-        DATABASE_USERNAME: root
-        DATABASE_PASSWORD: root
-        DATABASE_NAME: test_database
+        ruby-version: '3.1.3'
+
     - name: Install dependencies
       run: |
         gem install bundler
         bundle install --jobs 4 --retry 3
-    - name: Create test database
-      run: bundle exec rake db:create RAILS_ENV=test
-    - name: Run database migrations
-      run: bundle exec rake db:migrate RAILS_ENV=test
+    - name: Create and migrate database
+      run: |
+        sudo service mysql start
+        bundle exec rails db:create
+        bundle exec rails db:migrate
     - name: Run tests
-      run: bundle exec rspec
+      run: |
+        bundle exec rails test
+        bundle exec rspec
