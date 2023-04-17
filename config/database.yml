@@ -5,8 +5,8 @@ default: &default
   encoding: utf8mb4
   collation: utf8mb4_unicode_ci
   database: crud_ci
-  username: kelvin
-  password: kelvin
+  username: root
+  password: root
   host: 127.0.0.1
 
 development:
